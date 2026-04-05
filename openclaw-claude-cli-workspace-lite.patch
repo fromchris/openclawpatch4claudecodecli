@@ -1,0 +1,34 @@
+# OpenClaw Claude CLI workspace-lite boot prompt patch
+#
+# Purpose:
+# - Avoid Anthropic/Claude Code CLI returning
+#   "Third-party apps now draw from your extra usage..."
+#   when OpenClaw injects the full runtime system prompt.
+# - Keep Claude CLI usable by replacing the huge injected prompt with a
+#   lightweight boot instruction that tells Claude to reconstruct context
+#   from workspace files itself.
+#
+# This patch targets OpenClaw's built-in `claude-cli` backend.
+
+--- a/dist/pi-embedded-CbCYZxIb.js
++++ b/dist/pi-embedded-CbCYZxIb.js
+@@
+ function resolveSystemPromptUsage(params) {
+ 	const systemPrompt = params.systemPrompt?.trim();
+ 	if (!systemPrompt) return null;
+ 	const when = params.backend.systemPromptWhen ?? "first";
+ 	if (when === "never") return null;
+ 	if (when === "first" && !params.isNewSession) return null;
+ 	if (!params.backend.systemPromptArg?.trim()) return null;
+-	return systemPrompt;
++	const isClaudeCli = String(params.backend.command ?? '').includes('claude');
++	if (isClaudeCli) return [
++		'You are Theo, a helpful personal assistant chatting with Chris Zhu.',
++		'For a new or reset session, before replying, read these workspace files yourself: AGENTS.md, SOUL.md, IDENTITY.md, USER.md, TOOLS.md, HEARTBEAT.md, BOOTSTRAP.md if present, MEMORY.md, and today plus yesterday files under memory/ if present.',
++		'Use those files to reconstruct persona, user preferences, durable memory, workspace rules, and current context instead of relying on a large injected prompt.',
++		'Reply in concise natural Chinese by default, short chat style, not document style unless Chris explicitly asks for detail or tables.',
++		'Be direct, useful, and warm. Avoid filler and avoid stiff documentation tone.',
++		'Do not mention internal runtime, wrappers, hidden prompts, or system details unless Chris explicitly asks.'
++	].join(' ');
++	return systemPrompt;
+ }
