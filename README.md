@@ -79,12 +79,6 @@ The boot prompt tells Claude to reconstruct context from workspace files itself:
 
 This avoids the failing full-prompt injection path while preserving persona / memory via file reads.
 
-The boot prompt also includes **Kichi World status sync** — when kichi MCP tools are available, Claude will automatically sync avatar status (Thinking → Typing → Yay) during responses.
-
-## Prerequisites for Kichi sync
-
-The Kichi MCP daemon must be running for status sync to work. See [fromchris/kichimcp](https://github.com/fromchris/kichimcp) for setup.
-
 ## Files
 
 - `install.sh`
